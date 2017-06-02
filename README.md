@@ -16,11 +16,20 @@ The programs are declared here in literate Swift:
 
 * [Cake Pattern](Sources/Cake.swift)
 
+[![Cake pattern](img/cake.png)](Sources/Cake.swift)
+
 * [Reader Monad](Sources/Reader.swift)
 
+[![Reader Monad](img/reader.png)](Sources/Reader.swift)
+
 * [Free Monad](Sources/Free.swift)
+
+[![Free Monad](img/free.png)](Sources/Free.swift)
 
 The programs are then all evaluated in this
 
 * [Test file](Tests/di-playgroundTests/di_playgroundTests.swift)
+
+[![Test file](img/test.png)](Tests/di-playgroundTests/di_playgroundTests.swift)
+
 
