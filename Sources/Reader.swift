@@ -23,7 +23,7 @@ struct Reader<In, Data> {
     
     /// At any point in time we can ask for the dependency in our program. This is
     /// just a wrapped identity function.
-    var ask: Reader<In, In> {
+    static var ask: Reader<In, In> {
 	   return Reader<In, In> { i in i }
     }
     
