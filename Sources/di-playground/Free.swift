@@ -58,8 +58,8 @@ indirect enum FreeDataStore<A> {
 }
 
 extension FreeDataStore /* Functor */ {
-	/// We can thread our transformation through our commands
-	/// until we halt
+    /// We can thread our transformation through our commands
+    /// until we halt
     func map<B>(_ f: @escaping (A) -> B) -> FreeDataStore<B> {
         switch self {
         case let .fix(.get(key, next)): return .fix(.get(key: key, next: { s in next(s).map(f) }))
@@ -95,11 +95,11 @@ extension FreeDataStore /* Monad */ {
 /// continuations that just halt with the result
 enum FreeDataStoreDsl {
     static func get(key: String) -> FreeDataStore<String> {
-	    return .fix(.get(key: key, next: { s in .halt(s) }))
+        return .fix(.get(key: key, next: { s in .halt(s) }))
     }
     
-	static func set(key: String, value: String) -> FreeDataStore<()> {
-        return .fix(.set(key: key, value: value, next: { () in .halt() }))
+    static func set(key: String, value: String) -> FreeDataStore<()> {
+        return .fix(.set(key: key, value: value, next: { () in .halt(()) }))
     }
 }
 
@@ -112,7 +112,7 @@ enum FreeDataStoreDsl {
 /// the set and the get before evaluating it.
 enum FreeProgram {
     static func main() -> FreeDataStore<String> {
-        return FreeDataStoreDsl.set(key: "name", value: "Brandon").flatMap{ () in
+        return FreeDataStoreDsl.set(key: "name", value: "Brandon").flatMap{ _ in
             FreeDataStoreDsl.get(key: "name")
         }.map{ name in "Hello \(name)" }
     }

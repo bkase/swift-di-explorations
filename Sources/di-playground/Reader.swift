@@ -109,7 +109,7 @@ enum ReaderProgram {
     /// The actual computation is wrapped up in a reader composed with a series
     /// of maps and flatmaps
     static func main() -> Reader<Config, String> {
-        return ReaderDataStoreDsl.set(key: "name", value: "Brandon").flatMap { () in
+        return ReaderDataStoreDsl.set(key: "name", value: "Brandon").flatMap { _ in
             ReaderDataStoreDsl.get(key: "name")
         }.map{ name in "Hello \(name)" }
             /// Now we need to lift the Reader to our config domain
