@@ -116,3 +116,94 @@ enum ReaderProgram {
             .local{ config in config.dataStore }
     }
 }
+
+/// --- Bonus ---
+
+/// We can create effect stacks using Reader to flatMap/map over more than just the dependency at the same time!
+/// For example, we can capture failure as well when we use our cache
+enum OptionReaderDataStoreDsl {
+    static func get(key: String) -> OptionReader<ReaderDataStore, String> {
+        return OptionReader(Reader{ store in store.get(key: key) })
+    }
+    static func set(key: String, value: String) -> OptionReader<ReaderDataStore, ()> {
+        return OptionReader(Reader{ store in store.set(key: key, value: value)})
+    }
+}
+
+/// OptionReader is an effect stack that captures the effects of failure and dependencies in a single type.
+///
+/// Really, it just wraps a Reader of an Optional. This is nice, though, because we'll be able to handle several effects with a single flatMap
+struct OptionReader<In, Data> {
+    let reader: Reader<In, Data?>
+    init(_ reader: Reader<In, Data?>) {
+        self.reader = reader
+    }
+}
+
+extension OptionReader /* Functor */ {
+    /// We can map over an option reader by delegating to reader's map and optional's map
+    func map<B>(_ f: @escaping (Data) -> B) -> OptionReader<In, B> {
+        return OptionReader<In, B>(reader.map{ (data: Data?) -> B? in data.map(f) })
+    }
+}
+
+/// OptionReader is a Monad, because option is a monad, reader is a monad and monads can stack!
+extension OptionReader /* Monad */ {
+    /// We can turn a piece of data into an option reader by wrapping it in
+    /// an option and then a reader
+    static func pure(a: Data) -> OptionReader<In, Data> {
+        return OptionReader(Reader.pure(a: .some(a)))
+    }
+    
+    /// Flatmap also delegates to reader and option again, but it's a little more work because of all the nested wrappings
+    /// It's just using what you have in scope to try and get things to typecheck.
+    func flatMap<B>(_ f: @escaping (Data) -> OptionReader<In, B>) -> OptionReader<In, B> {
+        return OptionReader<In, B>(
+            Reader<In, B?>{ (deps: In) -> B? in
+                self.reader.map{ (maybeData: Data?) -> B? in
+                    maybeData.flatMap{ (data: Data) -> B? in
+                        f(data).reader.run(deps)
+                    }
+                }.run(deps)
+            }
+        )
+        
+    }
+}
+
+/// We want to be able to combine operations using only part of our effect stack with ones using other parts easily
+/// We can define lifting operations to bring operations that use only one effect into the universe of all of them
+extension OptionReader {
+    static func lift(reader: Reader<In, Data>) -> OptionReader<In, Data> {
+        return OptionReader(reader.map{ .some($0) })
+    }
+    
+    static func lift(optional: Data?) -> OptionReader<In, Data> {
+        return OptionReader(Reader.pure(a: optional))
+    }
+}
+
+/// Now we're free to mix and match mini programs that use different effects
+protocol MixAndMatch {
+    /// Only uses failure
+    func takeFirstName(data: String) -> String?
+    /// Only uses dependencies
+    func turnOnCache() -> Reader<ReaderDataStore, ()>
+    /// Uses all effects (depedendencies + failure)
+    func getFromCache(key: String) -> OptionReader<ReaderDataStore, String>
+}
+
+/// It's usually nice to define a concise typealias
+/// since the lifting distracts from the actual work
+typealias O<A> = OptionReader<ReaderDataStore, A>
+/// To pretend we have the above functions implemented, I'll
+/// define the usage of those functions within a protocol extension
+extension MixAndMatch {
+    func mixAndMatch(key: String) -> OptionReader<ReaderDataStore, String> {
+        return O<()>.lift(reader: turnOnCache()).flatMap{ () in
+            O<String>.lift(optional: self.takeFirstName(data: key))
+        }.flatMap(getFromCache)
+    }
+}
+
+
