@@ -14,17 +14,17 @@ In all cases, we define a simple program that sets a key-value pair, and then ge
 
 The programs are declared here in literate Swift:
 
-* [Cake Pattern](Sources/Cake.swift)
+* [Cake Pattern](Sources/di-playground/Cake.swift)
 
-[![Cake pattern](img/cake.png)](Sources/Cake.swift)
+[![Cake pattern](img/cake.png)](Sources/di-playground/Cake.swift)
 
-* [Reader Monad](Sources/Reader.swift)
+* [Reader Monad](Sources/di-playground/Reader.swift)
 
-[![Reader Monad](img/reader.png)](Sources/Reader.swift)
+[![Reader Monad](img/reader.png)](Sources/di-playground/Reader.swift)
 
-* [Free Monad](Sources/Free.swift)
+* [Free Monad](Sources/di-playground/Free.swift)
 
-[![Free Monad](img/free.png)](Sources/Free.swift)
+[![Free Monad](img/free.png)](Sources/di-playground/Free.swift)
 
 The programs are then all evaluated in this
 
